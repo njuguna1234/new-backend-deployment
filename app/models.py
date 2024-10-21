@@ -1,34 +1,63 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
 class User(db.Model):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    artworks = db.relationship('Artwork', backref='artist', lazy=True)
-    reviews = db.relationship('Review', backref='user', lazy=True)
-    purchases = db.relationship('Purchase', backref='user', lazy=True)
+    username = db.Column(db.String, nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+        }
 
 class Artwork(db.Model):
+    __tablename__ = 'artworks'
+
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String, nullable=False)
+    artist = db.Column(db.String, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    reviews = db.relationship('Review', backref='artwork', lazy=True)
-    purchases = db.relationship('Purchase', backref='artwork', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'artist': self.artist,
+            'price': self.price,
+        }
 
 class Review(db.Model):
+    __tablename__ = 'reviews'
+
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    artwork_id = db.Column(db.Integer, db.ForeignKey('artwork.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    artwork_id = db.Column(db.Integer, db.ForeignKey('artworks.id'))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'user_id': self.user_id,
+            'artwork_id': self.artwork_id
+        }
 
 class Purchase(db.Model):
+    __tablename__ = 'purchases'
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    artwork_id = db.Column(db.Integer, db.ForeignKey('artwork.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    artwork_id = db.Column(db.Integer, db.ForeignKey('artworks.id'))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'artwork_id': self.artwork_id
+        }
